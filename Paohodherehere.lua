@@ -14,13 +14,11 @@ local defaultWalkSpeed = humanoid.WalkSpeed
 local walkSpeedValue = 100 -- เปลี่ยนเป็นความเร็วที่ต้องการ
 
 -- การควบคุม Fly
-local flyingPart
 local flying = false
 local flySpeed = 50
 local bodyVelocity
 
 -- การควบคุม Aim Lock
-local aimLockPart
 local headLock = false
 
 -- ฟังก์ชันเปิด/ปิด Auto Farm
@@ -33,29 +31,17 @@ end
 local function toggleFly()
     flyEnabled = not flyEnabled
     if flyEnabled then
-        -- เริ่มการบิน
-        flyingPart = Instance.new("Part")
-        flyingPart.Size = Vector3.new(2, 2, 2)
-        flyingPart.Position = character.HumanoidRootPart.Position
-        flyingPart.Anchored = false
-        flyingPart.CanCollide = false
-        flyingPart.Parent = game.Workspace
-        flyingPart.CFrame = character.HumanoidRootPart.CFrame
-        
         -- เพิ่ม BodyVelocity เพื่อควบคุมการบิน
         bodyVelocity = Instance.new("BodyVelocity")
         bodyVelocity.MaxForce = Vector3.new(400000, 400000, 400000)
         bodyVelocity.Velocity = Vector3.new(0, flySpeed, 0)
         bodyVelocity.Parent = character.HumanoidRootPart
-        
+
         humanoid.PlatformStand = true
         flying = true
         print("Fly Enabled")
     else
         -- ยกเลิกการบิน
-        if flyingPart then
-            flyingPart:Destroy()
-        end
         if bodyVelocity then
             bodyVelocity:Destroy()
         end
@@ -81,28 +67,41 @@ end
 local function toggleAimLock()
     aimLockEnabled = not aimLockEnabled
     if aimLockEnabled then
-        aimLockPart = Instance.new("Part")
-        aimLockPart.Size = Vector3.new(1, 1, 1)
-        aimLockPart.Position = character.Head.Position
-        aimLockPart.Anchored = true
-        aimLockPart.CanCollide = false
-        aimLockPart.Parent = game.Workspace
         headLock = true
         print("Aim Lock Enabled")
     else
-        if aimLockPart then
-            aimLockPart:Destroy()
-        end
         headLock = false
         print("Aim Lock Disabled")
     end
 end
 
--- การควบคุมการบิน
+-- การควบคุมการบิน (สามารถควบคุมทิศทางได้)
 game:GetService("RunService").Heartbeat:Connect(function()
     if flyEnabled and flying then
-        -- เคลื่อนที่บิน
-        bodyVelocity.Velocity = Vector3.new(0, flySpeed, 0)
+        local direction = Vector3.new()
+
+        -- ควบคุมทิศทางการบินด้วยปุ่มต่าง ๆ
+        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.W) then
+            direction = direction + character.HumanoidRootPart.CFrame.LookVector
+        end
+        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.S) then
+            direction = direction - character.HumanoidRootPart.CFrame.LookVector
+        end
+        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.A) then
+            direction = direction - character.HumanoidRootPart.CFrame.RightVector
+        end
+        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.D) then
+            direction = direction + character.HumanoidRootPart.CFrame.RightVector
+        end
+        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.Space) then
+            direction = direction + Vector3.new(0, 1, 0)  -- ขึ้น
+        end
+        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.LeftControl) then
+            direction = direction - Vector3.new(0, 1, 0)  -- ลง
+        end
+
+        -- อัปเดต BodyVelocity ตามทิศทางที่ผู้เล่นควบคุม
+        bodyVelocity.Velocity = direction.Unit * flySpeed
     end
 end)
 
