@@ -11,6 +11,18 @@ local flying = false
 local flySpeed = 50
 local bodyVelocity
 
+-- สร้าง UI สำหรับแสดงสถานะ
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player.PlayerGui
+
+local flyStatusLabel = Instance.new("TextLabel")
+flyStatusLabel.Size = UDim2.new(0, 200, 0, 50)
+flyStatusLabel.Position = UDim2.new(0.5, -100, 0, 10)
+flyStatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+flyStatusLabel.BackgroundTransparency = 0.5
+flyStatusLabel.Text = "Fly: OFF"
+flyStatusLabel.Parent = screenGui
+
 -- ฟังก์ชันเปิด/ปิด Fly
 local function toggleFly()
     flyEnabled = not flyEnabled
@@ -23,6 +35,7 @@ local function toggleFly()
 
         humanoid.PlatformStand = true
         flying = true
+        flyStatusLabel.Text = "Fly: ON"
         print("Fly Enabled")
     else
         -- ยกเลิกการบิน
@@ -31,6 +44,7 @@ local function toggleFly()
         end
         humanoid.PlatformStand = false
         flying = false
+        flyStatusLabel.Text = "Fly: OFF"
         print("Fly Disabled")
     end
 end
