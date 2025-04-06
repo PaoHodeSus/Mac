@@ -17,6 +17,7 @@ local walkSpeedValue = 100 -- เปลี่ยนเป็นความเ�
 local flyingPart
 local flying = false
 local flySpeed = 50
+local bodyVelocity
 
 -- การควบคุม Aim Lock
 local aimLockPart
@@ -36,10 +37,17 @@ local function toggleFly()
         flyingPart = Instance.new("Part")
         flyingPart.Size = Vector3.new(2, 2, 2)
         flyingPart.Position = character.HumanoidRootPart.Position
-        flyingPart.Anchored = true
+        flyingPart.Anchored = false
         flyingPart.CanCollide = false
         flyingPart.Parent = game.Workspace
         flyingPart.CFrame = character.HumanoidRootPart.CFrame
+        
+        -- เพิ่ม BodyVelocity เพื่อควบคุมการบิน
+        bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.MaxForce = Vector3.new(400000, 400000, 400000)
+        bodyVelocity.Velocity = Vector3.new(0, flySpeed, 0)
+        bodyVelocity.Parent = character.HumanoidRootPart
+        
         humanoid.PlatformStand = true
         flying = true
         print("Fly Enabled")
@@ -47,6 +55,9 @@ local function toggleFly()
         -- ยกเลิกการบิน
         if flyingPart then
             flyingPart:Destroy()
+        end
+        if bodyVelocity then
+            bodyVelocity:Destroy()
         end
         humanoid.PlatformStand = false
         flying = false
@@ -91,7 +102,7 @@ end
 game:GetService("RunService").Heartbeat:Connect(function()
     if flyEnabled and flying then
         -- เคลื่อนที่บิน
-        flyingPart.CFrame = flyingPart.CFrame + flyingPart.CFrame.LookVector * flySpeed * game:GetService("RunService").Heartbeat:Wait()
+        bodyVelocity.Velocity = Vector3.new(0, flySpeed, 0)
     end
 end)
 
@@ -99,7 +110,10 @@ end)
 game:GetService("RunService").Heartbeat:Connect(function()
     if aimLockEnabled and headLock then
         -- ล็อคมุมมองที่หัว
-        character:SetPrimaryPartCFrame(CFrame.new(character.Head.Position, mouse.Hit.p))
+        local headPosition = character.Head.Position
+        local targetPosition = mouse.Hit.p
+        local direction = (targetPosition - headPosition).unit
+        character:SetPrimaryPartCFrame(CFrame.new(headPosition, headPosition + direction))
     end
 end)
 
